@@ -1,19 +1,43 @@
-# ClearBed — Hotel Operations Platform
+# ClearBed 🛏️
 
-Next.js 14 + Supabase frontend/backend for hotel housekeeping and room operations.
+> Hotel room operations management — built for speed, clarity, and control.
+
+ClearBed is a full-stack hotel operations platform that automates housekeeping, maintenance, and room turnover workflows across multiple facilities. Built with **Next.js 14** and **Supabase**, it gives hotel teams a real-time dashboard to manage everything from cleaning tasks to quality inspections — all in one place.
 
 ---
 
-## Quick Start
+## Features
 
-### 1. Run the SQL schema in Supabase
+- 🏨 **Multi-facility architecture** — isolated data per facility with role-based access
+- 🧹 **Housekeeping management** — assign, start, and complete cleaning tasks in real time
+- 🔧 **Maintenance tracking** — log requests, create work orders, track resolution
+- 🔄 **Room turnover lifecycle** — manage the full checkout-to-ready workflow
+- ✅ **Quality inspections** — supervisor-led checklists with pass/fail tracking
+- 📊 **Live dashboard** — KPI cards and room status map updated in real time
+- 👥 **Team management** — role-based permissions (Manager, Supervisor, Housekeeper, Maintenance, Reception)
 
-Go to your Supabase project → **SQL Editor** and run these files **in order**:
+---
 
-```
-sql/01_schema.sql   ← creates all tables, enums, triggers, indexes
-sql/02_rls.sql      ← Row Level Security policies
-sql/03_seed.sql     ← demo facility + 20 rooms
+## Tech Stack
+
+| Layer | Technology |
+|---|---|
+| Frontend | Next.js 14 (App Router), TypeScript, Tailwind CSS |
+| Backend | Supabase (PostgreSQL, Auth, Row Level Security) |
+| Deployment | Vercel |
+
+---
+
+## Getting Started
+
+### 1. Set up the database
+
+Go to your Supabase project → **SQL Editor** and run these files in order:
+
+```bash
+sql/01_schema.sql   # tables, enums, triggers, indexes
+sql/02_rls.sql      # Row Level Security policies
+sql/03_seed.sql     # demo facility + 20 rooms
 ```
 
 ### 2. Install dependencies
@@ -24,8 +48,13 @@ npm install
 
 ### 3. Configure environment
 
-`.env.local` is already populated with your project credentials.
-Never commit this file — it contains your service role key.
+Create a `.env.local` file based on `.env.example`:
+
+```env
+NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your_anon_key
+SUPABASE_SERVICE_ROLE_KEY=your_service_role_key
+```
 
 ### 4. Seed demo users
 
@@ -33,42 +62,70 @@ Never commit this file — it contains your service role key.
 npx tsx scripts/seed.ts
 ```
 
-This creates 6 Supabase Auth users with profile rows for the Grand Plaza Hotel demo facility.
+Creates 6 demo users with different roles for the Grand Plaza Hotel facility.
 
-### 5. Start the dev server
+### 5. Run the dev server
 
 ```bash
 npm run dev
 ```
 
-Open http://localhost:3000
+Open [http://localhost:3000](http://localhost:3000)
 
 ---
 
 ## Demo Credentials
 
-| Username            | Email                               | Password        | Role         |
-|---------------------|-------------------------------------|-----------------|--------------|
-| hotel_manager       | hotel_manager@clearbed.demo         | Manager@123     | Manager      |
-| hotel_supervisor    | hotel_supervisor@clearbed.demo      | Supervisor@123  | Supervisor   |
-| housekeeper1        | housekeeper1@clearbed.demo          | Housekeeper@123 | Room Attendant|
-| housekeeper2        | housekeeper2@clearbed.demo          | Housekeeper@123 | Room Attendant|
-| hotel_maintenance   | hotel_maintenance@clearbed.demo     | Maintenance@123 | Maintenance  |
-| hotel_reception     | hotel_reception@clearbed.demo       | Reception@123   | Reception    |
+| Role | Email | Password |
+|---|---|---|
+| Manager | hotel_manager@clearbed.demo | Manager@123 |
+| Supervisor | hotel_supervisor@clearbed.demo | Supervisor@123 |
+| Housekeeper | housekeeper1@clearbed.demo | Housekeeper@123 |
+| Maintenance | hotel_maintenance@clearbed.demo | Maintenance@123 |
+| Reception | hotel_reception@clearbed.demo | Reception@123 |
 
 ---
 
 ## Pages
 
-| Route           | Description                                    | Min Role     |
-|-----------------|------------------------------------------------|--------------|
-| /dashboard      | KPI cards + room status map                    | All          |
-| /rooms          | Room list with status filter + update          | All          |
-| /housekeeping   | Cleaning tasks — assign, start, complete       | All          |
-| /maintenance    | Requests + work orders                         | All          |
-| /turnovers      | Room turnover lifecycle                        | All          |
-| /inspections    | Quality inspections with checklist             | Supervisor+  |
-| /users          | Team member management                         | Manager only |
+| Route | Description | Access |
+|---|---|---|
+| `/dashboard` | KPI cards + live room status map | All roles |
+| `/rooms` | Room list with status filter and updates | All roles |
+| `/housekeeping` | Cleaning task assignment and tracking | All roles |
+| `/maintenance` | Maintenance requests and work orders | All roles |
+| `/turnovers` | Room turnover lifecycle management | All roles |
+| `/inspections` | Quality inspections with checklists | Supervisor+ |
+| `/users` | Team member management | Manager only |
+
+---
+
+## Project Structure
+
+```
+src/
+├── app/                    Next.js 14 App Router
+│   ├── login/              Authentication page
+│   ├── dashboard/          KPIs + room map
+│   ├── housekeeping/       Cleaning task management
+│   ├── maintenance/        Maintenance requests
+│   ├── turnovers/          Turnover workflow
+│   ├── inspections/        Quality inspections
+│   └── users/              User management
+├── components/layout/      Sidebar + AppShell
+├── hooks/useAuth.ts        Supabase auth hook
+├── lib/supabase/           Browser, server, and admin clients
+├── middleware.ts           Auth redirect middleware
+└── types/                  TypeScript types matching DB schema
+
+sql/
+├── 01_schema.sql           Tables, enums, triggers
+├── 02_rls.sql              Row Level Security
+└── 03_seed.sql             Demo data
+
+scripts/
+└── seed.ts                 Auth user seeding script
+```
 
 ---
 
@@ -79,62 +136,20 @@ npm install -g vercel
 vercel
 ```
 
-Add these environment variables in Vercel → Settings → Environment Variables:
+Add these in Vercel → Settings → Environment Variables:
 - `NEXT_PUBLIC_SUPABASE_URL`
 - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
 - `SUPABASE_SERVICE_ROLE_KEY`
 
 ---
 
-## Architecture
+## Security
 
-```
-src/
-├── app/                   Next.js 14 App Router pages
-│   ├── login/             Login page (Supabase Auth)
-│   ├── dashboard/         KPIs + room map
-│   ├── rooms/             Room management
-│   ├── housekeeping/      Cleaning task management
-│   ├── maintenance/       Maintenance requests + work orders
-│   ├── turnovers/         Room turnover workflow
-│   ├── inspections/       Quality inspections
-│   └── users/             User management (Manager only)
-├── components/
-│   └── layout/
-│       ├── Sidebar.tsx    Navigation sidebar
-│       └── AppShell.tsx   Auth-gated layout wrapper
-├── hooks/
-│   └── useAuth.ts         Supabase auth + profile hook
-├── lib/
-│   ├── supabase/
-│   │   ├── client.ts      Browser client
-│   │   ├── server.ts      Server component client
-│   │   ├── admin.ts       Service role client (server-only)
-│   │   └── middleware.ts  Session refresh middleware
-│   └── utils.ts           Status colours, helpers, role checks
-├── middleware.ts           Auth redirect middleware
-└── types/index.ts          TypeScript types (matches DB schema)
-
-sql/
-├── 01_schema.sql          All tables, enums, triggers, indexes
-├── 02_rls.sql             Row Level Security policies
-└── 03_seed.sql            Demo facility + rooms
-
-scripts/
-└── seed.ts                Creates Supabase Auth users + profiles
-```
+- All database access is protected by **Row Level Security (RLS)** policies
+- Facility-scoped helpers (`my_facility_id()`, `my_role()`) prevent cross-facility data access
+- Service role key is server-only and never exposed to the client
+- `.env.local` is gitignored — never commit real credentials
 
 ---
 
-## Adding Users
-
-Since this is a closed system, new users are added by a Manager via the Supabase Dashboard:
-
-1. Go to **Authentication → Users → Invite user**
-2. Enter their email and send invite
-3. In the **Table Editor**, find the newly created row in `profiles` and set:
-   - `facility_id` = your facility's UUID
-   - `role` = one of `MANAGER | SUPERVISOR | HOUSEKEEPER | MAINTENANCE | RECEPTION`
-   - `username` = their display name
-
-Or use the `scripts/seed.ts` pattern to script user creation with the service role key.
+Built by [Nawaf Alghamdi](https://github.com/Mg2n)
